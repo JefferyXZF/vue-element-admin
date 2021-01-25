@@ -184,6 +184,19 @@ export const asyncRoutes = [
     ]
   },
 
+  {
+    path: '/image-clipper',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/image-clipper/index'),
+        name: 'imageClipper',
+        meta: { title: 'Image Clipper', icon: 'el-icon-picture', noCache: true }
+      }
+    ]
+  },
+
   /** when your routing map is too long, you can split it into small modules **/
   componentsRouter,
   chartsRouter,
