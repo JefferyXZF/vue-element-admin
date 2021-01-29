@@ -172,6 +172,19 @@ export const asyncRoutes = [
   },
 
   {
+    path: '/calendarView',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/calendar-view/index'),
+        name: 'Icons',
+        meta: { title: 'Calendar View', icon: 'el-icon-picture', noCache: true }
+      }
+    ]
+  },
+
+  {
     path: '/icon',
     component: Layout,
     children: [
