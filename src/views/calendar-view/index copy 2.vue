@@ -87,12 +87,6 @@ export default {
         events: [ // 视图填充数据
           { title: 'event 1eventeventeventeventevent', date: '2021-01-23', editable: true, color: 'red', id: 222 },
           { title: 'event 2', date: '2021-01-29 07:00' },
-          { title: 'event 2', date: '2021-01-29 07:00' },
-          { title: 'event 2', date: '2021-01-29 07:00' },
-          { title: 'event 2', date: '2021-01-29 07:00' },
-          { title: 'event 2', date: '2021-01-29 07:00' },
-          { title: 'event 2', date: '2021-01-29 07:00' },
-          { title: 'event 2', date: '2021-01-29 07:00' },
           { title: 'event 2', date: '2021-01-29', textColor: 'red', borderColor: 'blue' },
           { title: 'event 2', date: '2021-01-29', color: 'blue' },
           { title: 'event 2', date: '2021-01-29', backgroundColor: 'green' },
@@ -165,21 +159,18 @@ export default {
             textColor: '#F9AE26' // 该事件的文字颜色
           }
         ],
-        dayMaxEventRows: true, // 显示事件数
+        dayMaxEventRows: true,
+        initialDate: moment().format('YYYY-MM-DD'), // 自定义设置背景颜色时一定要初始化日期时间
         // timeGridEventMinHeight: '60', // 设置事件的最小高度
         locale: 'zh-cn', // 中文格式
         views: {
           // 月视图格式
           dayGridMonth: {
-            displayEventTime: false, // 是否显示时间
             // 农历显示
             dayCellContent: this.dayCellContent
           },
           // 周视图格式
           timeGridWeek: {
-            // slotMinTime: '19:00', // 周视图开始时间
-            // slotMaxTime: '20:00', // 周视图结束时间
-            displayEventTime: false, // 是否显示时间
             // 农历显示
             dayCellContent: this.dayCellContent,
             // 表格头部
@@ -189,7 +180,6 @@ export default {
           },
           // 日视图格式
           timeGridDay: {
-            displayEventTime: false, // 是否显示时间
             // 农历显示
             dayCellContent: function() {
               return { html: '' }
@@ -203,19 +193,27 @@ export default {
             }
           }
         },
+        // titleFormat: '',
+        // dayHeaderFormat: { weekday: 'short', month: 'short', day: 'numeric', omitCommas: false }, // 表格头部日期格式
         // eventsSet: this.handleEvents, 获取事件日程集合
         // weekends: false, // 是否显示周末
         // hiddenDays: [1, 5], // 隐藏周一、周三、周五
         aspectRatio: 1.65, // 设置日历单元格宽度与高度的比例
         // eventColor: '#9df2b5', // 全部日历日程背景色
+        // columnHeader: false,
         // allDaySlot: false, // 是否显示全天
         firstDay: 1, // 设置一周中显示的第一天是哪天，周日是0，周一是1
         allDayText: '全天',
-        defaultTimedEventDuration: '00:30', // 日程事件在时间网格中占用的高度，30分钟的高度
+        slotMinTime: '00:00', // 最小时间
+        // slotMaxTime: '00:01', // 最大时间
+        // slotDuration: '00:15:00', // 时间网格中时间间隔，1小时
+        // defaultTimedEventDuration: '00:30', // 日程事件在时间网格中占用的高度，30分钟的高度
+        // dayMaxEvents: true,
         slotLabelFormat: { // 左侧时间网格格式
           hour: 'numeric',
           minute: '2-digit',
-          // meridiem: 'short',
+          // omitZeroMinute: true,
+          meridiem: 'short',
           hour12: false
         },
         eventTimeFormat: { // 在每个事件上显示的时间的格式
@@ -223,6 +221,13 @@ export default {
           minute: '2-digit',
           hour12: false
         },
+        // 重新渲染
+        handleDatesRender: (item) => {
+          console.log(item, 'qqqqqqqq111111')
+        },
+        // titleFormat: {
+        //   // week: "dd", // Sep 7 - 13 2013
+        // },
         editable: false, // 控制拖动和缩放操作
         selectable: true, // 可以选中单元格空白处，触发 select
         datesSet: this.datesSet,
@@ -391,18 +396,9 @@ export default {
       margin-top: -4px;
     }
   }
-  // .fc-timeGridWeek-view {
-  //   .fc-scrollgrid-section-liquid {
-  //     display: none;
-  //   }
-  //   .fc-scrollgrid-sync-table,
-  //   .fc-scroller-harness,
-  //   .fc-scroller,
-  //   .fc-daygrid-body,
-  //   .fc-daygrid-day-events {
-  //     height: 100%;
-  //   }
-  // }
+  .fc-timeGridWeek-view {
+
+  }
   .fc-timegrid-slot {
     background: #fff;
   }
@@ -449,7 +445,6 @@ export default {
     border-radius: 5px;
     text-align: center;
   }
-
 }
 /*滚动条*/
 ::-webkit-scrollbar {
