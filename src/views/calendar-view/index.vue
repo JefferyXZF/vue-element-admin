@@ -11,10 +11,7 @@
         <el-radio-button label="dayGridMonth">月</el-radio-button>
         <el-radio-button :label="isDateType ? 'dayGridWeek' : 'timeGridWeek'">周</el-radio-button>
         <el-radio-button :label="isDateType ? 'dayGridDay' : 'timeGridDay'">日</el-radio-button>
-        <!-- <el-radio-button label="listYear">listYear列表</el-radio-button>
-        <el-radio-button label="listMonth">listMonth列表</el-radio-button>
-        <el-radio-button label="listWeek">listWeek列表</el-radio-button>
-        <el-radio-button label="listDay">listDay列表</el-radio-button> -->
+        <el-radio-button label="listDay">列表</el-radio-button>
       </el-radio-group>
     </div>
 
@@ -67,8 +64,8 @@ const monthMap = {
   12: '十二月'
 }
 
-// 格式化月/周视图
-function formatMonthAndWeek(lunarCalendar) {
+// 格式化月/周视图单元格
+function formatMonthAndWeekCell(lunarCalendar) {
   return {
     displayEventTime: false, // 是否显示时间
     // 农历显示
@@ -76,6 +73,7 @@ function formatMonthAndWeek(lunarCalendar) {
       let itemDate = moment(item.date).format('YYYY-MM-DD')
       const dayClass = `class="${itemDate === todayDate ? 'calendar-today' : ''} day-number"` // 添加今天样式
       itemDate = itemDate.split('-')
+      // 农历转换
       const _dateF = calendar.solar2lunar(itemDate[0], itemDate[1], itemDate[2])
       // 标识今天样式
       return { html: `<p class="calendar-number-day"><span>${lunarCalendar ? _dateF.IDayCn : ''}</span><label ${dayClass}>${_dateF.cDay}号</label></p>` }
@@ -87,11 +85,10 @@ function formatMonthAndWeek(lunarCalendar) {
   }
 }
 
-// 格式化日视图
-function formatDayGrid(lunarCalendar) {
+// 格式化日视图单元格
+function formatDayGridCell(lunarCalendar) {
   return {
     displayEventTime: false, // 是否显示时间
-    // 农历显示
     dayCellContent: function() {
       return { html: '' }
     },
@@ -99,26 +96,39 @@ function formatDayGrid(lunarCalendar) {
     dayHeaderContent(item) {
       let itemDate = moment(item.date).format('YYYY-MM-DD')
       itemDate = itemDate.split('-')
+      // 农历转换
       const _dateF = calendar.solar2lunar(itemDate[0], itemDate[1], itemDate[2])
       return lunarCalendar ? { html: `${_dateF.ncWeek}  农历${monthMap[_dateF.lMonth]}${_dateF.IDayCn}` } : { html: _dateF.ncWeek }
     }
   }
 }
 
-function hideTips() {
+function hideTips(item) {
   tipsDom && (tipsDom.style.cssText = 'display:none;')
 }
 
+/**
+ * 注册鼠标悬浮事件 鼠标悬浮在事件上隐藏提示，悬浮在月/周/日 日网格显示提示
+*/
 function addMouseEvent() {
   const ableDom = document.querySelector('.fc-scrollgrid-sync-table')
 
   if (ableDom && gridTableDom !== ableDom) {
-    const fn = (ev) => {
-      tipsDom && (tipsDom.style.cssText = `display:block;left:${ev.x + 20}px;top:${ev.y}px`)
+    const showTips = (ev) => {
+      try {
+        const html = ev.target.innerHTML.toString()
+        if (html.includes('fc-event-title') && (!html.includes('fc-daygrid-day-top'))) {
+          hideTips()
+        } else {
+          tipsDom && (tipsDom.style.cssText = `display:block;left:${ev.x + 20}px;top:${ev.y}px`)
+        }
+      } catch (error) {
+        console.log(error)
+      }
     }
 
-    gridTableDom && gridTableDom.removeEventListener('mousemove', fn)
-    ableDom.addEventListener('mousemove', fn)
+    gridTableDom && gridTableDom.removeEventListener('mousemove', showTips)
+    ableDom.addEventListener('mousemove', showTips)
     ableDom.addEventListener('mouseout', () => {
       hideTips()
     }, false)
@@ -150,7 +160,7 @@ export default {
     // 默认视图
     initialView: {
       type: String,
-      default: 'dayGridMonth'
+      default: 'dayGridWeek'
     },
     // 默认日程事件颜色
     eventColor: {
@@ -160,7 +170,7 @@ export default {
     // 是否显示农历
     showLunarCalendar: {
       type: Boolean,
-      default: false
+      default: true
     },
     // 隐藏天数
     hiddenDays: {
@@ -174,7 +184,7 @@ export default {
         addAble: true, // 新增
         detailAble: true, // 查看
         deleteable: false, // 删除
-        dropAble: true // 拖拽
+        editAble: true // 拖拽
       })
     }
   },
@@ -195,8 +205,90 @@ export default {
         events: [ // 视图填充数据
           { title: 'event 1eventeventeventeventevent', date: '2021-01-23', editable: true, color: 'red', id: 222 },
           {
+            id: '22323',
             title: '标题',
-            start: '2021-01-29',
+            start: '2021-02-05',
+            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
+            backgroundColor: '#FDEBC9', // 该事件的背景颜色
+            borderColor: '#FDEBC9', // 该事件的边框颜色
+            textColor: '#F9AE26' // 该事件的文字颜色
+          },
+          {
+            id: '22323',
+            title: '标题',
+            start: '2021-02-05',
+            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
+            backgroundColor: '#FDEBC9', // 该事件的背景颜色
+            borderColor: '#FDEBC9', // 该事件的边框颜色
+            textColor: '#F9AE26' // 该事件的文字颜色
+          },
+          {
+            id: '22323',
+            title: '标题',
+            start: '2021-02-05',
+            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
+            backgroundColor: '#FDEBC9', // 该事件的背景颜色
+            borderColor: '#FDEBC9', // 该事件的边框颜色
+            textColor: '#F9AE26' // 该事件的文字颜色
+          },
+          {
+            id: '22323',
+            title: '标题',
+            start: '2021-02-05',
+            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
+            backgroundColor: '#FDEBC9', // 该事件的背景颜色
+            borderColor: '#FDEBC9', // 该事件的边框颜色
+            textColor: '#F9AE26' // 该事件的文字颜色
+          },
+          {
+            id: '22323',
+            title: '标题',
+            start: '2021-02-05',
+            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
+            backgroundColor: '#FDEBC9', // 该事件的背景颜色
+            borderColor: '#FDEBC9', // 该事件的边框颜色
+            textColor: '#F9AE26' // 该事件的文字颜色
+          },
+          {
+            id: '22323',
+            title: '标题',
+            start: '2021-02-05',
+            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
+            backgroundColor: '#FDEBC9', // 该事件的背景颜色
+            borderColor: '#FDEBC9', // 该事件的边框颜色
+            textColor: '#F9AE26' // 该事件的文字颜色
+          },
+          {
+            id: '22323',
+            title: '标题',
+            start: '2021-02-05',
+            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
+            backgroundColor: '#FDEBC9', // 该事件的背景颜色
+            borderColor: '#FDEBC9', // 该事件的边框颜色
+            textColor: '#F9AE26' // 该事件的文字颜色
+          },
+          {
+            id: '22323',
+            title: '标题',
+            start: '2021-02-05',
+            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
+            backgroundColor: '#FDEBC9', // 该事件的背景颜色
+            borderColor: '#FDEBC9', // 该事件的边框颜色
+            textColor: '#F9AE26' // 该事件的文字颜色
+          },
+          {
+            id: '22323',
+            title: '标题',
+            start: '2021-02-05',
+            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
+            backgroundColor: '#FDEBC9', // 该事件的背景颜色
+            borderColor: '#FDEBC9', // 该事件的边框颜色
+            textColor: '#F9AE26' // 该事件的文字颜色
+          },
+          {
+            id: '22323',
+            title: '标题',
+            start: '2021-02-05',
             end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
             backgroundColor: '#FDEBC9', // 该事件的背景颜色
             borderColor: '#FDEBC9', // 该事件的边框颜色
@@ -204,7 +296,7 @@ export default {
           },
           {
             title: '标题',
-            start: '2021-01-29',
+            start: '2021-02-05',
             end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
             backgroundColor: '#FDEBC9', // 该事件的背景颜色
             borderColor: '#FDEBC9', // 该事件的边框颜色
@@ -212,7 +304,7 @@ export default {
           },
           {
             title: '标题',
-            start: '2021-01-29',
+            start: '2021-02-05',
             end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
             backgroundColor: '#FDEBC9', // 该事件的背景颜色
             borderColor: '#FDEBC9', // 该事件的边框颜色
@@ -220,7 +312,7 @@ export default {
           },
           {
             title: '标题',
-            start: '2021-01-29',
+            start: '2021-02-05',
             end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
             backgroundColor: '#FDEBC9', // 该事件的背景颜色
             borderColor: '#FDEBC9', // 该事件的边框颜色
@@ -228,23 +320,7 @@ export default {
           },
           {
             title: '标题',
-            start: '2021-01-29',
-            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
-            backgroundColor: '#FDEBC9', // 该事件的背景颜色
-            borderColor: '#FDEBC9', // 该事件的边框颜色
-            textColor: '#F9AE26' // 该事件的文字颜色
-          },
-          {
-            title: '标题',
-            start: '2021-01-29',
-            end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
-            backgroundColor: '#FDEBC9', // 该事件的背景颜色
-            borderColor: '#FDEBC9', // 该事件的边框颜色
-            textColor: '#F9AE26' // 该事件的文字颜色
-          },
-          {
-            title: '标题',
-            start: '2021-01-29',
+            start: '2021-02-05',
             end: '2021-02-03', // 这里要注意，end为可选参数，无end参数时该事件仅在当天展示
             backgroundColor: '#FDEBC9', // 该事件的背景颜色
             borderColor: '#FDEBC9', // 该事件的边框颜色
@@ -259,8 +335,12 @@ export default {
         eventColor: this.eventColor, // 全部日历日程背景色
         firstDay: 1, // 设置一周中显示的第一天是哪天，周日是0，周一是1
         allDayText: '全天',
-        // allDaySlot: false, // 是否显示全天
+        allDaySlot: false, // 是否显示全天
         defaultTimedEventDuration: '00:30', // 日程事件在时间网格中占用的高度，30分钟的高度
+        // slotDuration: '01:00', // 显示时隙的频率 1小时
+        // slotLabelInterval: '02:00', // 显示标签时隙的频率 1小时
+        // slotMinTime: '01:00', 显示最小时间
+        scrollTime: '06:00:00', // 默认滚动到的时间水平线
         slotLabelFormat: { // 左侧时间网格格式
           hour: 'numeric',
           minute: '2-digit',
@@ -271,7 +351,7 @@ export default {
           minute: '2-digit',
           hour12: false
         },
-        editable: this.operate.dropAble, // 控制拖动和缩放操作
+        editable: this.operate.editAble, // 控制拖动和缩放操作
         selectable: this.operate.addAble, // 可以选中单元格空白处，触发 select
         select: this.handleEventDblClick, // 新建日程事件
         eventClick: this.handleEventClick, // 查看日程事件
@@ -280,15 +360,15 @@ export default {
         eventMouseEnter: hideTips, // 鼠标滑入日程事件
         views: {
           // 月视图格式
-          dayGridMonth: this.formatMonthorWeek(),
+          dayGridMonth: this.formatMonthorWeekCell(),
           // 周视图日格式
-          dayGridWeek: this.formatMonthorWeek(),
+          dayGridWeek: this.formatMonthorWeekCell(),
           // 周视图时间格式
-          timeGridWeek: this.formatMonthorWeek(),
+          timeGridWeek: this.formatMonthorWeekCell(),
           // 日视图日格式
-          dayGridDay: this.formatDayGrid(),
+          dayGridDay: this.formatDayGridCell(),
           // 日视图时间格式
-          timeGridDay: this.formatDayGrid()
+          timeGridDay: this.formatDayGridCell()
         }
       }
     }
@@ -327,7 +407,7 @@ export default {
         const listGridPlugin = Object.freeze(require('@fullcalendar/list').default) // 列表视图
         const interactionGridPlugin = Object.freeze(require('@fullcalendar/interaction').default) // eventClick 事件
 
-        this.calendarOptions.plugins.push(dayGridPlugin, interactionGridPlugin, timeGridPlugin, listGridPlugin)
+        this.calendarOptions.plugins.push(dayGridPlugin, timeGridPlugin, listGridPlugin, interactionGridPlugin)
       } catch (error) {
         console.log(error)
       }
@@ -367,16 +447,17 @@ export default {
         addMouseEvent()
       })
     },
-    // 月/周视图表格标题处理
-    formatMonthorWeek() {
-      return formatMonthAndWeek(this.showLunarCalendar)
+    // 月/周视图表格单元格和标题处理
+    formatMonthorWeekCell() {
+      return formatMonthAndWeekCell(this.showLunarCalendar)
     },
-    // 格式化日视图
-    formatDayGrid() {
-      return formatDayGrid(this.showLunarCalendar)
+    // 化日视图表格单元格和标题处理
+    formatDayGridCell() {
+      return formatDayGridCell(this.showLunarCalendar)
     },
+    // 点击更多事件
     eventLimitClick(selectInfo) {
-      console.log('eventLimitClick', selectInfo)
+      console.log('eventLimitClick', selectInfo, selectInfo.view.getCurrentData())
       const calendar = selectInfo.view.calendar
       if (calendar) {
         calendar.unselect() // clear date selection
@@ -514,6 +595,7 @@ export default {
   }
   .tips {
     position: fixed;
+    width: 120px;
     display: none;
     color: #333;
     padding: 0 5px;
